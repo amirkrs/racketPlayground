@@ -1,0 +1,38 @@
+#lang racket
+
+(struct node (value left right))
+
+(define (list->complete-tree lst)
+  (define (build-tree lst index)
+    (cond
+      [(>= index (length lst)) #f] ; If index exceeds the length of the list, return #f
+      [else
+       (node (list-ref lst index)  ; Create a node with the value at the current index
+             (build-tree lst (+ (* 2 index) 1))  ; Recursively build left subtree
+             (build-tree lst (+ (* 2 index) 2)))])) ; Recursively build right subtree
+
+  (build-tree lst 0)) ; Start building the tree from index 0
+
+(define (display-tree tree)
+  (define (display-tree-helper tree depth)
+    (cond
+      [(empty-tree? tree) (void)] ; If it's an empty tree, don't display anything
+      [else
+       (display-tree-helper (node-right tree) (+ depth 1)) ; Recursively display right subtree
+       (newline)
+       (display (make-string (* depth 4) #\space)) ; Adjust spacing based on depth
+       (display (node-value tree)) ; Display the value of the current node
+       (newline)
+       (display-tree-helper (node-left tree) (+ depth 1)) ; Recursively display left subtree
+       ]))
+  (display-tree-helper tree 0)) ; Start displaying the tree from depth 0
+
+(define (empty-tree? tree)
+  (not tree)) ; A tree is empty if it's not a node
+
+; Example list
+(define lst '(1))
+
+(displayln "Complete binary tree from the list:")
+(display-tree (list->complete-tree lst))
+(newline)

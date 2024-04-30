@@ -1,0 +1,38 @@
+#lang racket
+(define (apply-if-true func1 func2 num)
+  (if (func1 num)
+      (func2 num)
+      num))
+
+(define (even num)
+  (= (remainder num 2) 0)) ; Checks if num is even
+
+(define (odd num)
+  (= (remainder num 2) 1)) ; Checks if num is odd
+
+(define (zero num)
+  (= (num) 0)) ; Checks if num is zero
+
+(define (example-func2 num)
+  (+ num 1)) ; Adds 1 to the input number
+
+
+(define even? (lambda (x) (zero? (remainder x 2))))
+(define square (lambda (x) (* x x)))
+
+(define odd? (lambda (x) (not (zero? (remainder x 2)))))
+(define add-one (lambda (x) (+ x 1)))
+
+(define zero? (lambda (x) (= x 0)))
+(define subtract-one (lambda (x) (- x 1)))
+
+
+
+
+(displayln (apply-if-true even? square 6))
+(displayln (apply-if-true odd? add-one 1))
+(displayln (apply-if-true zero? subtract-one 3))
+
+
+
+

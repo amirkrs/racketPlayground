@@ -1,0 +1,116 @@
+#lang racket
+
+(define (simplify parameter) 
+    (cond
+        ((and (list? parameter) (= (length parameter) 3) (eq? (first parameter) '+)) (simplify_add parameter))
+        ((and (list? parameter) (= (length parameter) 3) (eq? (first parameter) '-)) (simplify_minus parameter))
+        ((and (list? parameter) (= (length parameter) 3) (eq? (first parameter) '*)) (simplify_mult parameter))
+        ((and (list? parameter) (= (length parameter) 3) (eq? (first parameter) '/)) (simplify_div parameter))
+        (else parameter)
+    )
+)
+
+(define (simplify_add parameter)
+    (cond
+        ((and (list? parameter) (= (length parameter) 3) (number? (second parameter)) (number? (third parameter))) (+ (second parameter) (third parameter)))
+        ((and (list? parameter) (= (length parameter) 3) (number? (second parameter)) (= (second parameter) 0) ) (simplify (third parameter)))
+        ((and (list? parameter) (= (length parameter) 3) (number? (third parameter)) (= (third parameter) 0) ) (simplify (second parameter)))
+        (else parameter)
+    )
+)
+
+(define (simplify_minus parameter)
+    (cond
+        ((and (list? parameter) (= (length parameter) 3) (number? (second parameter)) (number? (third parameter))) (- (second parameter) (third parameter)))
+        ((and (list? parameter) (= (length parameter) 3) (number? (second parameter)) (= (second parameter) 0) ) (simplify (list '* -1 (third parameter))))
+        ((and (list? parameter) (= (length parameter) 3) (not (number? (second parameter)))) (simplify(list '- (simplify(second parameter)) (simplify (third parameter)))))
+        (else parameter)
+    )
+)
+
+(define (simplify_mult parameter)
+    (cond
+        ((and (list? parameter) (= (length parameter) 3) (number? (second parameter)) (number? (third parameter))) (* (second parameter) (third parameter)))
+        ((and (list? parameter) (= (length parameter) 3) (number? (second parameter)) (= (second parameter) 1)) (simplify (third parameter)))
+        ((and (list? parameter) (= (length parameter) 3) (number? (third parameter)) (= (third parameter) 1)) (simplify (second parameter)))
+        ((and (list? parameter) (= (length parameter) 3) (or (= (second parameter) 0) (= (second parameter) 0))) 0)
+        ((and (list? parameter) (= (length parameter) 3) (not (number? (second parameter))) (not (number? (third parameter)))) (simplify (list '* (simplify(second parameter)) (simplify (third parameter)))))
+        (else parameter)
+    )
+)
+(define (simplify_div parameter)
+    (cond
+        ((and (list? parameter) (= (length parameter) 3) (number? (second parameter)) (number? (third parameter))) (quotient (second parameter) (third parameter)))
+        ((and (list? parameter) (= (length parameter) 3) (not (number? (second parameter))) (not (number? (third parameter)))) (list '/ (simplify(second parameter)) (simplify (third parameter))))
+        (else parameter)
+    )
+)
+
+
+
+(define (integral integral_parameter integral_ratio)
+    (cond
+        ((number? integral_parameter) (list '* integral_parameter integral_ratio))
+        ((and (symbol? integral_parameter) (not (eq? integral_parameter integral_ratio))) (list '+ (list '* integral_parameter integral_ratio) 'c))
+        ((and (symbol? integral_parameter) (eq? integral_parameter integral_ratio)) ('+ (list '/ 2 (list '^ 2 integral_parameter)) 'c))
+        ((and (list? integral_parameter) (= (length integral_parameter) 3) (eq? (first integral_parameter) '*)) (list '* (second integral_parameter) (integral (third integral_parameter) integral_ratio)))
+        ((and (list? integral_parameter) (= (length integral_parameter) 3) (eq? (first integral_parameter) '/)) (list '/ (second integral_parameter) (integral (third integral_parameter) integral_ratio)))
+        ((and (list? integral_parameter) (= (length integral_parameter) 3) (eq? (first integral_parameter) '+)) (list '+ (integral (second integral_parameter) integral_ratio) (integral (third integral_parameter) integral_ratio)))
+        ((and (list? integral_parameter) (= (length integral_parameter) 3) (eq? (first integral_parameter) '-)) (list '- (integral (second integral_parameter) integral_ratio) (integral (third integral_parameter) integral_ratio)))
+        ((and (list? integral_parameter) (= (length integral_parameter) 3) (eq? (first integral_parameter) '^)) (cond 
+            ((eq? (second integral_parameter) integral_ratio) (list '+ (list '/ ( + (third integral_parameter) 1 ) (list '^ integral_ratio ( + (third integral_parameter) 1 ))) 'c))
+            ((eq? (second integral_parameter) 'e) (cond
+                ((and (list? (third integral_parameter)) (= (length (third integral_parameter)) 3) (eq? (first (third integral_parameter)) '*)) (list '+ (list '/ integral_parameter (second (third integral_parameter))) 'c))
+                (else (list '+ integral_parameter 'c))
+            ))
+            ((eq? (third integral_parameter) integral_ratio) (list '+ (list '/ integral_parameter (list 'ln (second integral_parameter))) 'c))
+            (else (write "Unsupported operation"))
+        ))
+        (else (write "Unsupported operation"))
+    )
+)
+
+(define (Ra_loop number quotient result)
+    (cond 
+        ((<= (expt (+ 0.001 result ) quotient ) number) (Ra_loop number quotient (+  0.01 result)))
+        (else  (/ (round (* result 1000)) 1000))
+    )
+)
+
+(define (Ra number quotient)
+    (Ra_loop number  quotient 0.001)
+)
+
+
+
+(define (calculator operator first_param second_param)
+    (cond 
+        ((eq? operator '+) (+ first_param second_param))
+        ((eq? operator '-) (- first_param second_param))
+        ((eq? operator '*) (* first_param second_param))
+        ((eq? operator '/) (/ first_param second_param))
+        ((eq? operator '^) (expt first_param second_param))
+        ((eq? operator 'Ra) (Ra first_param second_param))
+        ((eq? operator 'In) (integral first_param second_param))
+        (else (display "Unsupported operand"))
+    )
+)
+
+;;; (simplify (calculator 'In '(^ e (* 2 x)) 'x))
+
+(simplify (calculator '+ 3 2))
+(simplify (calculator '- 3 2))
+(simplify (calculator '* 3 2))
+(simplify (calculator '/ 3 2))
+(simplify (calculator '^ 3 2))
+(calculator 'Ra 16 2)
+(calculator 'Ra 27 3)
+(calculator 'Ra 15 2)
+(calculator 'In '(+ (^ x 2) (^ x 1)) 'x)
+(calculator 'In '(^ 2 x) 'x)
+(calculator 'In '(^ e (* 2 x)) 'x)
+
+
+
+
+
