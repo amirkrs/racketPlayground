@@ -1,0 +1,16 @@
+#lang racket
+
+(define (reverse-list lst)
+  (define (reverse-list-helper lst acc)
+    (if (null? lst)
+        acc
+        (reverse-list-helper (cdr lst) (cons (car lst) acc))))
+  (reverse-list-helper lst '()))
+
+(define original-list '())
+(define reversed-list (reverse-list original-list))
+
+(display "Original list: ")
+(displayln original-list)
+(display "Reversed list: ")
+(displayln reversed-list)

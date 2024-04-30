@@ -1,0 +1,16 @@
+#lang racket
+
+(define (largest-int lst)
+  (if (null? lst)
+      (error "List is empty")
+      (let loop ((lst (cdr lst)) (max-int (car lst)))
+        (cond
+          ((null? lst) max-int)
+          ((> (car lst) max-int) (loop (cdr lst) (car lst)))
+          (else (loop (cdr lst) max-int))))))
+
+(define test-list '(1 7 3 5))
+(display "List: ")
+(displayln test-list)
+(display "Largest integer: ")
+(displayln (largest-int test-list))

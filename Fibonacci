@@ -1,0 +1,15 @@
+#lang racket
+(define (fibonacci)
+  (define n (string->number (read-line)))
+  (display "The Fibonacci number of ")
+  (display n)
+  (display " is ")
+  (displayln (fib n)))
+
+(define (fib n)
+  (if (or (= n 0) (= n 1))
+      n
+      (+ (fib (- n 1))
+         (fib (- n 2)))))
+
+(fibonacci)

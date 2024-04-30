@@ -1,0 +1,35 @@
+#lang racket
+
+(struct node (value left right))
+
+(define (trees-equal? tree1 tree2)
+  (cond
+    [(and (empty-tree? tree1) (empty-tree? tree2)) #t] ; Both trees are empty, they are equal
+    [(or (empty-tree? tree1) (empty-tree? tree2)) #f]  ; One tree is empty, they are not equal
+    [else
+     (and (= (node-value tree1) (node-value tree2))    ; Check if current node values are equal
+          (trees-equal? (node-left tree1) (node-left tree2))  ; Recursively check left subtrees
+          (trees-equal? (node-right tree1) (node-right tree2)))])) ; Recursively check right subtrees
+
+(define (empty-tree? tree)
+  (not tree)) ; A tree is empty if it's not a node
+
+(define (input-tree)
+  (define (helper)
+    (let ((value (read)))
+      (if (eq? value '#f)
+          #f
+          (let ((left (input-tree)))
+            (let ((right (input-tree)))
+              (node value left right))))))
+
+  (helper))
+
+(displayln "Enter the structure of tree1 (press Ctrl+D when done):")
+(define tree1 (input-tree))
+
+(displayln "Enter the structure of tree2 (press Ctrl+D when done):")
+(define tree2 (input-tree))
+
+(displayln "Are tree1 and tree2 equal?")
+(display (trees-equal? tree1 tree2))

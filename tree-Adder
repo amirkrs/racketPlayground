@@ -1,0 +1,51 @@
+#lang racket
+
+(struct node (value left right))
+
+(define (sum-tree tree)
+  (cond
+    [(empty-tree? tree) 0]                       ; Base case: empty tree has sum 0
+    [else (+ (node-value tree)                    ; Sum the current node's value
+             (sum-tree (node-left tree))          ; Recursively sum the left subtree
+             (sum-tree (node-right tree)))]))     ; Recursively sum the right subtree
+
+(define (empty-tree? tree)
+  (not tree))                                     ; A tree is empty if it's not a node
+
+(define (build-tree value left right)
+  (node value left right))                        ; Helper function to build a tree node
+
+(define (input-tree)
+  (define (helper)
+    (let ((value (read)))
+      (if (eq? value '#f)
+          #f
+          (let ((left (input-tree)))
+            (let ((right (input-tree)))
+              (build-tree value left right))))))
+
+  (helper))
+
+(define (display-tree tree)
+  (define (display-tree-helper tree depth)
+    (cond
+      [(empty-tree? tree) (void)]                 ; If it's an empty tree, don't display anything
+      [else
+       (display-tree-helper (node-right tree) (+ depth 1)) ; Recursively display right subtree
+       (newline)
+       (display (make-string (* depth 4) #\space)) ; Adjust spacing based on depth
+       (display (node-value tree))                ; Display the value of the current node
+       (newline)
+       (display-tree-helper (node-left tree) (+ depth 1)) ; Recursively display left subtree
+       ]))
+  (display-tree-helper tree 0))                   ; Start displaying the tree from depth 0
+
+(displayln "Please input the tree (enter #f for empty nodes):")
+(define tree (input-tree))
+(displayln "Sum of all tree members:")
+(display (sum-tree tree))
+(newline)
+
+(displayln "Tree structure:")
+(display-tree tree)
+(newline)
